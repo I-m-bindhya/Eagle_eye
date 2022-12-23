@@ -298,6 +298,8 @@ def main():
 
                     img_rgb = cv2image[start_y : end_y, start_x : end_x]
                     duplicate = cv2.imread(str(recipeid)+".png")
+                    if duplicate is None:
+                        return messagebox.showerror('Error','Saved image was missing or corrupted')
                     template = duplicate[start_y : end_y, start_x : end_x]
 
                     res = cv2.matchTemplate(img_rgb, template, cv2.TM_CCOEFF_NORMED)
@@ -377,6 +379,7 @@ def main():
                 capturepass=int(cntp)+1
                 unitpass.delete(0,"end")
                 unitpass.insert(0,capturepass )
+                cv2.imwrite("images/pass/" +  str(recipeid) + " - " + strftime("%Y%m%d-%H%M%S") +".png", cap.read()[1])
                 return label.configure(bg="#77dd77")
 
             else:
@@ -385,6 +388,7 @@ def main():
                 capturefail=int(cntp)+1
                 unitfail.delete(0,"end")
                 unitfail.insert(0,capturefail)
+                cv2.imwrite("images/fail/" +  str(recipeid) + " - " + strftime("%Y%m%d-%H%M%S") +".png", cap.read()[1])
                 return label.configure(bg="#EC2424")
 
 
