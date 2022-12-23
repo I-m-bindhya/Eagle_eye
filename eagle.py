@@ -79,6 +79,7 @@ def main():
     mycursor.execute(sql)
     resRec = mycursor.fetchall()
 
+    global recipeid
     recipeid = 0
     recipeName = ''
         # choice = menu.get()
@@ -255,7 +256,6 @@ def main():
 
     def show_frames():
         global imgTemp, detect, recipeid
-        print("roi",recipeid)
 
         Resultname = Label(root, bg="#DDDDDD", text="                ", fg="green", font=('Helvatical bold',22), width=10, height=1).place(x=600, y=50)
 
@@ -303,7 +303,7 @@ def main():
 
                     res = cv2.matchTemplate(img_rgb, template, cv2.TM_CCOEFF_NORMED)
                     print("res", res)
-                    threshold = .6
+                    threshold = .5
                     loc = np.where(res >= threshold)
                     for pt in zip(*loc[::-1]):  # Switch collumns and rows
                             imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name)
@@ -390,7 +390,7 @@ def main():
 
 
     def show_initial_frames():
-        global imgTemp
+        global imgTemp, recipeid
 
         Resultname = Label(root, bg="#DDDDDD", text="                ", fg="green", font=('Helvatical bold',22), width=10, height=1).place(x=600, y=50)
 
@@ -401,7 +401,6 @@ def main():
         labelConfig(imgTemp)
         # Repeat 
         if not recipeid: 
-            print("init", recipeid)
             label.after(100, show_initial_frames)
         return label.configure(bg="#DDDDDD")
 
