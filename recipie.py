@@ -1,16 +1,16 @@
 import tkinter as tk
-from tkinter import mainloop, ttk
+from tkinter import Button, mainloop, ttk
 from tkinter import messagebox
 import pymysql
 import cv2
 import mysql.connector
 
-def main():
+def main(window):
     #ProjectGurukul- Initializing window frame
-    window = tk.Tk()
-    window.state("zoomed")
-    # window.geometry("1350x700")
-    window.title("eagle eye")
+    # window = tk.Tk()
+    # window.state("zoomed")
+    # # window.geometry("1350x700")
+    # window.title("eagle eye")
 
     # database
     con=pymysql.connect(host='localhost',user='root',password='',database='eagle_eye')
@@ -304,4 +304,8 @@ def main():
     mainloop()
 
 if __name__ == "__main__":
-    main()
+
+    root = tk.Tk()
+    root.title("Eagle Eye")
+
+    main(root)

@@ -12,8 +12,7 @@ from tkinter.font import Font
 import OCR
 import pytesseract
 import numpy as np
-import exe
-import crud
+import crud, controller
 
 def main():
     # function
@@ -116,7 +115,7 @@ def main():
                 if results[6]  == "Administrator"  :
                     crud.main() 
                 else:  
-                    exe.main()
+                    controller.main()
                 # root.destroy()
                 return True
             else:

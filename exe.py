@@ -14,16 +14,17 @@ from datetime import date
 import sys
 import eagle
 import select_roi
+import reports_
+import recipie
 
 
 
-def main():
+def main(root):
     # create window
-    root = Tk()
-    #root.geometry('1280x720')
+    # root = Tk()
     #root.attributes("-fullscreen", True)
-    root.state("zoomed")
-    root.title("Eagle Eye")
+    # root.state("zoomed")
+    # root.title("Eagle Eye")
     # root.iconbitmap("eagle.ico")
 
     hostname = socket.gethostname()
@@ -199,7 +200,7 @@ def main():
     # sn alt name
     Label(root, text="RECIPE NAME:").place(x=20,y=80)
     snAltNo = Entry(root)
-    snAltNo.place(x=155,y=80)
+    snAltNo.place(x=155, y=80, w=370)
 
     # windowWidth
     Label(root, text="WINDOW WIDTH:").place(x=20,y=120)
@@ -321,7 +322,7 @@ def main():
     CheckVar1 = IntVar()
     saveselection = Checkbutton(root, text = "SAVE", variable = CheckVar1, \
                     onvalue = 1, offvalue = 0 \
-                    ).place(x=400, y=505)
+                    ).place(x=240, y=505)
 
     # button reset to default 
     def refreshscale():
@@ -343,13 +344,7 @@ def main():
 
     # button to save camera settings
     # saveButton= Button(root, text="SELECT ROI", command=callRoi).place(x=240, y=700)
-    saveButton= Button(root, text="SAVE SETTINGS", command=saveSettings).place(x=440, y=700)
-    def back():
-        root.destroy()
-        cap.release()
-        eagle.main()
-        
-    backToHome = Button(root, text="BACK TO HOME ", command=back).place(x=20, y=700) 
+    saveButton= Button(root, text="SAVE SETTINGS", command=saveSettings).place(x=430, y=505)
 
 
     def show_frames():
@@ -385,4 +380,8 @@ def main():
     root.mainloop()
 
 if __name__ == "__main__":
-    main()
+
+    root = Tk()
+    root.title("Eagle Eye")
+
+    main(root)
