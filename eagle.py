@@ -11,7 +11,6 @@ from time import strftime
 from tkinter.font import Font
 import OCR
 import pytesseract
-import os
 import numpy as np
 import exe
 import crud
@@ -255,7 +254,8 @@ def main():
 
 
     def show_frames():
-        global imgTemp, detect
+        global imgTemp, detect, recipeid
+        print("roi",recipeid)
 
         Resultname = Label(root, bg="#DDDDDD", text="                ", fg="green", font=('Helvatical bold',22), width=10, height=1).place(x=600, y=50)
 
@@ -401,6 +401,7 @@ def main():
         labelConfig(imgTemp)
         # Repeat 
         if not recipeid: 
+            print("init", recipeid)
             label.after(100, show_initial_frames)
         return label.configure(bg="#DDDDDD")
 

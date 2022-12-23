@@ -13,7 +13,7 @@ import mysql.connector
 from datetime import date
 import sys
 import eagle
-import roi
+import select_roi
 
 
 
@@ -338,7 +338,7 @@ def main():
     def callRoi():
         cap.release()
         root.destroy()
-        roi.main()
+        select_roi.main()
 
 
     # button to save camera settings
