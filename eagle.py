@@ -13,6 +13,7 @@ import OCR
 import pytesseract
 import numpy as np
 import crud, controller
+from datetime import datetime
 
 def main():
     # function
@@ -246,9 +247,20 @@ def main():
         label.frame_num += 1
         label.configure(image=imgtk)
 
-    def imgText(imgTemp, start: list[int, int], end: list[int, int], color, data, roi_name):
+    def imgText(imgTemp, start: list[int, int], end: list[int, int], color, data, roi_name, status):
         imgTemp= cv2.rectangle(imgTemp, (start[0], start[1]), (end[0], end[1]), color , 2)
         cv2.putText(imgTemp, roi_name + ': ' + data, (start[0], start[1]-10), cv2.FONT_HERSHEY_DUPLEX, 0.6, color , 1)
+
+        # Insert into capture_roi table
+        if status is not NONE: 
+            time = datetime.today()
+            capturedatetime = time.strftime('%Y-%m-%d %H:%M:%S')
+            print("capturedatetimeeee",capturedatetime)                    
+            insert ="insert into capture_roi(data,status,datetime) value(%s,%s,%s)"
+            valuee = (data,status,capturedatetime)
+            mycursor.execute(insert,valuee)
+            mysqldb.commit() 
+
         return imgTemp
 
 
@@ -278,7 +290,7 @@ def main():
             type = roi[7]
             data = roi[8]
 
-            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,0,255), " ", roi_name)
+            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,0,255), " ", roi_name, NONE)
             # cv2.imwrite('temp.png',cv2image[roi[2]:roi[2]+roi[4],roi[1]:roi[1]+roi[3]])
 
             if detect:
@@ -307,10 +319,10 @@ def main():
                     threshold = .5
                     loc = np.where(res >= threshold)
                     for pt in zip(*loc[::-1]):  # Switch collumns and rows
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE)
                             passCount+=1 
                     if len(loc[0]) == 0:
-                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name)
+                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE)
                 elif type == 'OCR': 
                     OCR.tesseract_location('C:\\Program Files\\Tesseract-OCR\\tesseract.exe')
                     imgTemp, text = ocr_stream(crop=[start_x, start_y], img_hi= end_y - start_y , img_wi = end_x - start_x)
@@ -321,12 +333,12 @@ def main():
                         results = mycursor.fetchall()
 
                         if results:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE)
                             passCount+=1 
                         else:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), text, roi_name, FALSE)
                     else:
-                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name)
+                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE)
 
                 else:
                     imCrop = Image.fromarray(cv2image[start_y : start_y+end_y, start_x : start_x+end_x])
@@ -342,24 +354,13 @@ def main():
                         print("query", recipe_results) 
 
                         if recipe_results:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE)
                             passCount+=1
                         else:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name)
-
-
-
-                        # Timer(3.0, show_frames).start()
-                        # time = datetime.today()
-                        # capturedatetime = time.strftime('%Y-%m-%d %H:%M:%S')
-                        # print("capturedatetimeeee",capturedatetime)
-                    
-                        # insert ="insert into capture(recipe_id,status,datetime) value(%s,%s,%s)"
-                        # valuee = (recipeid,status,capturedatetime)
-                        # mycursor.execute(insert,valuee)
-                        # mysqldb.commit()           
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0),decoded_data, roi_name, FALSE)
+         
                     if not decode(imCrop):                    
-                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name)
+                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE)
 
 
         labelConfig(imgTemp)
@@ -370,9 +371,11 @@ def main():
 
         elif roi_result and len(roi_result) == totalCount:
             cntp = countText.get()        
+
             captureCount = int(cntp)
             countText.delete(0,"end")
             countText.insert(0, captureCount+1)
+
             if totalCount == passCount:
                 Resultname = Label(root, bg="#77dd77", text="   PASS   ",fg="white",font=('Helvatical bold',22), width=10, height=1).place(x=600, y=50)
                 cntp = unitpass.get()
@@ -380,6 +383,7 @@ def main():
                 unitpass.delete(0,"end")
                 unitpass.insert(0,capturepass )
                 cv2.imwrite("images/pass/" +  str(recipeid) + " - " + strftime("%Y%m%d-%H%M%S") +".png", cap.read()[1])
+                capture(TRUE)
                 return label.configure(bg="#77dd77")
 
             else:
@@ -389,7 +393,27 @@ def main():
                 unitfail.delete(0,"end")
                 unitfail.insert(0,capturefail)
                 cv2.imwrite("images/fail/" +  str(recipeid) + " - " + strftime("%Y%m%d-%H%M%S") +".png", cap.read()[1])
+                capture(FALSE)
                 return label.configure(bg="#EC2424")
+
+
+    def capture(status):
+            # capture initialization
+            time = datetime.today()
+            capturedatetime = time.strftime('%Y-%m-%d %H:%M:%S')
+            print("capturedatetimeeee",capturedatetime)                    
+            insert ="insert into capture(recipe_id,status,datetime) value(%s,%s,%s)"
+
+
+            valuee = (recipeid,status,capturedatetime)
+            mycursor.execute(insert,valuee)
+            mysqldb.commit() 
+
+            # capture_roi update 
+            update = "UPDATE capture_roi set capture_id=%s WHERE capture_id=0"
+            val = mycursor.lastrowid
+            mycursor.execute(update,(val,))
+            mysqldb.commit() 
 
 
     def show_initial_frames():
