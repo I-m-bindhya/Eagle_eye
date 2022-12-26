@@ -208,7 +208,7 @@ def main(window):
         sql= "SELECT * from roi where receipe_id=%s"
         mycursor.execute(sql,[id.get()]) 
         roi_result = mycursor.fetchall()
-        img = cv2.imread(str(id.get())+'.png')
+        img = cv2.imread("reports/recipes/" + str(id.get())+'.png')
         for roi in roi_result:
             roi_name = roi[0]
             start_x = roi[1]

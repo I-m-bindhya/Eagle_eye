@@ -1,4 +1,5 @@
 # module
+import os
 from tkinter import *
 from tkinter import messagebox
 import cv2
@@ -79,9 +80,10 @@ def main():
     mycursor.execute(sql)
     resRec = mycursor.fetchall()
 
-    global recipeid
+    global recipeid, saveSelection, captureId
     recipeid = 0
     recipeName = ''
+    saveSelection = FALSE
         # choice = menu.get()
         # drop.config(bg=choice)
 
@@ -147,9 +149,10 @@ def main():
         print('resRec',resRec)
         for row in resRec:
             if choice == row[2]:
-                global recipeid, recipeName
+                global recipeid, recipeName, saveSelection
                 recipeid = row[0]
                 recipeName = row[2]
+                saveSelection = row[14]
                 onResetValue()
                 onReset()
                 setCameraSettings(row)
@@ -309,7 +312,7 @@ def main():
                     #     imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name)
 
                     img_rgb = cv2image[start_y : end_y, start_x : end_x]
-                    duplicate = cv2.imread(str(recipeid)+".png")
+                    duplicate = cv2.imread("reports/recipes/" + str(recipeid)+".png")
                     if duplicate is None:
                         return messagebox.showerror('Error','Saved image was missing or corrupted')
                     template = duplicate[start_y : end_y, start_x : end_x]
@@ -382,7 +385,6 @@ def main():
                 capturepass=int(cntp)+1
                 unitpass.delete(0,"end")
                 unitpass.insert(0,capturepass )
-                cv2.imwrite("images/pass/" +  str(recipeid) + " - " + strftime("%Y%m%d-%H%M%S") +".png", cap.read()[1])
                 capture(TRUE)
                 return label.configure(bg="#77dd77")
 
@@ -392,12 +394,12 @@ def main():
                 capturefail=int(cntp)+1
                 unitfail.delete(0,"end")
                 unitfail.insert(0,capturefail)
-                cv2.imwrite("images/fail/" +  str(recipeid) + " - " + strftime("%Y%m%d-%H%M%S") +".png", cap.read()[1])
                 capture(FALSE)
                 return label.configure(bg="#EC2424")
 
 
     def capture(status):
+            global captureId
             # capture initialization
             time = datetime.today()
             capturedatetime = time.strftime('%Y-%m-%d %H:%M:%S')
@@ -411,9 +413,24 @@ def main():
 
             # capture_roi update 
             update = "UPDATE capture_roi set capture_id=%s WHERE capture_id=0"
-            val = mycursor.lastrowid
-            mycursor.execute(update,(val,))
+            captureId = mycursor.lastrowid
+            mycursor.execute(update,(captureId,))
             mysqldb.commit() 
+            print(saveSelection)
+
+            if saveSelection:
+                _dir = "reports/autosave-recipes"
+
+                if not os.path.exists(_dir):
+                    os.makedirs(_dir)
+
+                _dir = os.path.join(_dir, '%s' %recipeid)
+
+                if not os.path.exists(_dir):
+                    os.makedirs(_dir)
+
+                cv2.imwrite(_dir + "/" + str(captureId) + ("_pass" if status else "_fail") +".png", cap.read()[1])
+
 
 
     def show_initial_frames():
@@ -437,16 +454,28 @@ def main():
         take_pic()
 
     def take_pic():
-        #file_name = f"{label.datetime.now()}.png"
-        file_name = "images/"+"tesss.png"
-        print(file_name)
-        imagetk = label.imgtk
-        print(imagetk)
-        imgpil = ImageTk.getimage( imagetk )
-        print(imgpil)
-        # imgpil = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        imgpil.save(file_name,"PNG")
-        imgpil.close()
+        # #file_name = f"{label.datetime.now()}.png"
+        # file_name = "images/"+"tesss.png"
+        # print(file_name)
+        # imagetk = label.imgtk
+        # print(imagetk)
+        # imgpil = ImageTk.getimage( imagetk )
+        # print(imgpil)
+        # # imgpil = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        # imgpil.save(file_name,"PNG")
+        # imgpil.close()
+
+        _dir = "reports/capture"
+
+        if not os.path.exists(_dir):
+            os.makedirs(_dir)
+
+        _dir = os.path.join(_dir, '%s' %recipeid)
+
+        if not os.path.exists(_dir):
+            os.makedirs(_dir)
+
+        cv2.imwrite(_dir + "/" + str(captureId) +".png", cap.read()[1])
 
 
     def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, language=None, img_wi: int = 0, img_hi: int = 0):

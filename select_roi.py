@@ -32,7 +32,7 @@ def main():
         # cap = cv2.VideoCapture(0)
         # ret, frame1 = cap.read()
 
-        image = cv2.imread(str(lastRow[0]) + '.png')
+        image = cv2.imread("reports/recipes/" + str(lastRow[0]) + '.png')
 
         roi = cv2.selectROI("Select Rois",image, True)
         print("roi",roi)

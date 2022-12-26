@@ -1,6 +1,7 @@
 # module
 from calendar import c
 from fileinput import filename
+import os
 import socket
 from timeit import Timer
 from tkinter import *
@@ -155,6 +156,9 @@ def main(root):
 
         #print("recipe,recipe_alt_name,brightness,contrast,saturation,focus,window_width,window_height,camera_resolution,recipedate", recipe,recipe_alt_name,brightness,contrast,saturation,focus,window_width,window_height,camera_resolution,recipedate)
 
+        if not recipe_alt_name :
+            return messagebox.showinfo("error", "Please provide valid recipe name.")
+
         mydb = mysql.connector.connect(
             host="localhost",
             user="root",
@@ -165,7 +169,12 @@ def main(root):
         query = "Insert into recipes(recipe_alt_name,brightness,contrast,saturation,focus,window_width,window_height,camera_resolution,save_selection,recipe_date,station_name,ip_address) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         val = (recipe_alt_name,brightness,contrast,saturation,focus,window_width,window_height,camera_resolution,save_selection,recipedate,hostname,ip_address)
         mycursor.execute(query, val)
-        cv2.imwrite( str(mycursor.lastrowid)+".png", cap.read()[1])
+        _dir = "reports/recipes/"
+
+        if not os.path.exists(_dir):
+            os.makedirs(_dir)
+
+        cv2.imwrite( _dir + str(mycursor.lastrowid)+".png", cap.read()[1])
         # recipe_results = mycursor.fetchall()
         # print("recipe_resultssss",mycursor.lastrowid)
         mydb.commit()
@@ -200,26 +209,27 @@ def main(root):
     # sn alt name
     Label(root, text="RECIPE NAME:").place(x=20,y=80)
     snAltNo = Entry(root)
-    snAltNo.place(x=155, y=80, w=370)
+    snAltNo.place(x=155, y=80, w=370, h=25)
+    snAltNo.focus_set()
+
 
     # windowWidth
     Label(root, text="WINDOW WIDTH:").place(x=20,y=120)
 
     windowWidth=Entry(root)
-    windowWidth.insert(END, 'default text')
+    windowWidth.insert(0,"1080")
 
     windowWidth.place(x=157, y=120, w=83, h=25)
-    windowWidth.focus_set()
-    windowWidth.delete(0, END)
+    # windowWidth.delete(0, END)
     #print("windowWidth",windowWidth)
 
     # windowHeight
     Label(root, text="WINDOW HEIGHT:").place(x=300,y=120)
     windowHeight=Entry(root)
-    windowHeight.insert(0,"720")
+    windowHeight.insert(0,"580")
     windowHeight.place(x=438, y=120, w=83, h=25)
-    windowHeight.focus_set()
-    windowHeight.delete(0, END)
+    # windowHeight.focus_set()
+    # windowHeight.delete(0, END)
     #print("windowHeight",windowHeight)
 
     # brightness scale
