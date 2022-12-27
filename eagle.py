@@ -153,6 +153,8 @@ def main():
                 recipeid = row[0]
                 recipeName = row[2]
                 saveSelection = row[14]
+                captureButton.grid()
+                if saveSelection : captureButton.grid_remove() 
                 onResetValue()
                 onReset()
                 setCameraSettings(row)
@@ -416,20 +418,31 @@ def main():
             captureId = mycursor.lastrowid
             mycursor.execute(update,(captureId,))
             mysqldb.commit() 
-            print(saveSelection)
+            # print(saveSelection)
 
+            # auto save image
             if saveSelection:
+
+                imagetk = label.imgtk
+                imgpil = ImageTk.getimage( imagetk )
+
                 _dir = "reports/autosave-recipes"
 
                 if not os.path.exists(_dir):
                     os.makedirs(_dir)
 
-                _dir = os.path.join(_dir, '%s' %recipeid)
+                _dir = os.path.join(_dir, '%s/' %recipeid)
+
+                _dir += ("pass" if status else "fail")
 
                 if not os.path.exists(_dir):
                     os.makedirs(_dir)
 
-                cv2.imwrite(_dir + "/" + str(captureId) + ("_pass" if status else "_fail") +".png", cap.read()[1])
+                # cv2.imwrite(_dir + "/" + str(captureId) +".png", imgpil)
+                _dir += "/" + str(captureId) +".png"
+
+                imgpil.save(_dir,"PNG")
+                imgpil.close()
 
 
 
@@ -465,17 +478,23 @@ def main():
         # imgpil.save(file_name,"PNG")
         # imgpil.close()
 
-        _dir = "reports/capture"
+        imagetk = label.imgtk
+        imgpil = ImageTk.getimage( imagetk )
 
-        if not os.path.exists(_dir):
-            os.makedirs(_dir)
+        _dir = "reports/capture-recipes"
 
         _dir = os.path.join(_dir, '%s' %recipeid)
 
+        # _dir += ("pass" if status else "fail")
+
         if not os.path.exists(_dir):
             os.makedirs(_dir)
 
-        cv2.imwrite(_dir + "/" + str(captureId) +".png", cap.read()[1])
+        # cv2.imwrite(_dir + "/" + str(captureId) +".png", imgpil)
+        _dir += "/" + str(captureId) +".png"
+
+        imgpil.save(_dir,"PNG")
+        imgpil.close()
 
 
     def ocr_stream(crop: list[int, int], source: int = 0, view_mode: int = 1, language=None, img_wi: int = 0, img_hi: int = 0):
@@ -522,8 +541,13 @@ def main():
 
 
 
-    resetCamera = Button(root, text="RESET", height=1, width=10, command=onReset).place(x=580, y=630)
-    captureButton = Button(root, text="CAPTURE", height=1, width=10, command=take_pic).place(x=690, y=630)
+    resetCamera = Button(root, text="RESET",  width=10, command=onReset)
+    # resetCamera.place(x=580, y=630)
+    resetCamera.grid(padx=10, pady=10)
+
+    captureButton = Button(root, text="CAPTURE",  width=10, command=take_pic)
+    # captureButton.place(x=690, y=630)
+    captureButton.grid(padx=10, pady=10)
     #my_time()
     show_initial_frames()
     mainloop()
