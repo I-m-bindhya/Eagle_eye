@@ -153,8 +153,9 @@ def main():
                 recipeid = row[0]
                 recipeName = row[2]
                 saveSelection = row[14]
-                captureButton.grid()
-                if saveSelection : captureButton.grid_remove() 
+                captureButton.grid()                
+                if saveSelection : captureButton.grid_remove()
+                else: captureButton.place(x=965, y=630)
                 onResetValue()
                 onReset()
                 setCameraSettings(row)
@@ -177,7 +178,7 @@ def main():
         countText.delete(0,"end")
         countText.insert(0,0)
 
-    loginButton = Button(root, text="LOGIN", height=1, width=7, command=open ).place(x=915, y=10)
+    loginButton = Button(root, text="LOGIN", height=1, width=7, command=open ).place(x=965, y=10)
 
     global label
     def update_text():
@@ -237,11 +238,11 @@ def main():
 
 
 
-    Label(root, text="SELECT MODEL").place(x=580, y=13)
+    Label(root, text="SELECT MODEL").place(x=330, y=13)
     menu = StringVar(root)
     # menu.set(my_list[0])
     # recipeChangevent(my_list[0])
-    drop = OptionMenu(root, menu, *my_list, command=recipeChangevent).place(x=670, y=10) 
+    drop = OptionMenu(root, menu, *my_list, command=recipeChangevent).place(x=430, y=10) 
     detect = 0
 
     def labelConfig(imgTemp):
@@ -483,9 +484,9 @@ def main():
 
         _dir = "reports/capture-recipes"
 
-        _dir = os.path.join(_dir, '%s' %recipeid)
+        _dir = os.path.join(_dir, '%s/' %recipeid)
 
-        # _dir += ("pass" if status else "fail")
+        _dir += ("pass" if label.cget("bg") == "#77dd77" else "fail")
 
         if not os.path.exists(_dir):
             os.makedirs(_dir)
@@ -542,12 +543,12 @@ def main():
 
 
     resetCamera = Button(root, text="RESET",  width=10, command=onReset)
-    # resetCamera.place(x=580, y=630)
-    resetCamera.grid(padx=10, pady=10)
+    resetCamera.place(x=330, y=630)
+    # resetCamera.grid(column=0,row=0)
 
     captureButton = Button(root, text="CAPTURE",  width=10, command=take_pic)
-    # captureButton.place(x=690, y=630)
-    captureButton.grid(padx=10, pady=10)
+    # captureButton.place(x=965, y=630)
+    # captureButton.grid(column=1,row=0)
     #my_time()
     show_initial_frames()
     mainloop()
