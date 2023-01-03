@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import mainloop, ttk
 from tkinter import messagebox
 import pymysql
+import eagle
 
 def main():
 
@@ -67,7 +68,11 @@ def main():
             for row in rows:
                 User_table.insert('',tk.END,values=row)
             con.commit()
-            con.close()        
+            con.close()    
+
+    def LOG_OUT():
+        window.destroy()
+        eagle.main()   
 
     def GET_DATA_SEARCH():
         con=pymysql.connect(host='localhost',user='root',password='',database='eagle_eye')
@@ -201,6 +206,9 @@ def main():
     
     Show_Button = tk.Button(Frame_Search, text="SHOW ALL", bd=2, font=(15), width=10, command=GET_DATA)
     Show_Button.grid(row=0, column=4, padx=4, pady=1)
+
+    logout = tk.Button(Frame_Search, text="LOGOUT", bd=2, font=(15), width=10, command=LOG_OUT)
+    logout.grid(row=0, column=5, padx=4, pady=1)
 
     # Database Frame
     Frame_Database = tk.Frame(Frame_Data, bd=2, relief=tk.GROOVE)
