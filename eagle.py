@@ -32,7 +32,7 @@ def main():
     hostname = socket.gethostname()
     ip_address = socket.gethostbyname(hostname)
     time_string = strftime(' %A %x')
-    hostname = Label(root, text="Station Name:  " + hostname, font = "Calibri, 10 bold").place(x=20,y=20)
+    Label(root, text="Station Name:  " + hostname, font = "Calibri, 10 bold").place(x=20,y=20)
     ipaddress = Label(root, text="IP Address:  " + ip_address, font = "Calibri, 10 bold").place(x=20,y=40)
     dateDay = Label(root, text="Date:  " + time_string, font = "Calibri, 10 bold").place(x=20,y=60)
 
@@ -254,7 +254,7 @@ def main():
         label.frame_num += 1
         label.configure(image=imgtk)
 
-    def imgText(imgTemp, start: list[int, int], end: list[int, int], color, data, roi_name, status):
+    def imgText(imgTemp, start: list[int, int], end: list[int, int], color, data, roi_name, status ,roi_id):
         imgTemp= cv2.rectangle(imgTemp, (start[0], start[1]), (end[0], end[1]), color , 2)
         cv2.putText(imgTemp, roi_name + ': ' + data, (start[0], start[1]-10), cv2.FONT_HERSHEY_DUPLEX, 0.6, color , 1)
 
@@ -263,8 +263,8 @@ def main():
             time = datetime.today()
             capturedatetime = time.strftime('%Y-%m-%d %H:%M:%S')
             print("capturedatetimeeee",capturedatetime)                    
-            insert ="insert into capture_roi(data,status,datetime) value(%s,%s,%s)"
-            valuee = (data,status,capturedatetime)
+            insert ="insert into capture_roi(data,status,datetime,station_name,recipe_id,roi_id) value(%s,%s,%s,%s,%s,%s)"
+            valuee = (data,status,capturedatetime,hostname,recipeid,roi_id)
             mycursor.execute(insert,valuee)
             mysqldb.commit() 
 
@@ -290,6 +290,7 @@ def main():
         passCount = 0
         for roi in roi_result:
             roi_name = roi[0]
+            roi_id = roi[6]
             start_x = roi[1]
             start_y = roi[2]
             end_x = roi[3]
@@ -297,7 +298,7 @@ def main():
             type = roi[7]
             data = roi[8]
 
-            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,0,255), " ", roi_name, NONE)
+            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,0,255), " ", roi_name, NONE, roi_id)
             # cv2.imwrite('temp.png',cv2image[roi[2]:roi[2]+roi[4],roi[1]:roi[1]+roi[3]])
 
             if detect:
@@ -326,10 +327,10 @@ def main():
                     threshold = .5
                     loc = np.where(res >= threshold)
                     for pt in zip(*loc[::-1]):  # Switch collumns and rows
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE, roi_id)
                             passCount+=1 
                     if len(loc[0]) == 0:
-                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE)
+                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE, roi_id)
                 elif type == 'OCR': 
                     OCR.tesseract_location('C:\\Program Files\\Tesseract-OCR\\tesseract.exe')
                     imgTemp, text = ocr_stream(crop=[start_x, start_y], img_hi= end_y - start_y , img_wi = end_x - start_x)
@@ -340,12 +341,12 @@ def main():
                         results = mycursor.fetchall()
 
                         if results:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE, roi_id)
                             passCount+=1 
                         else:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), text, roi_name, FALSE)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), text, roi_name, FALSE, roi_id)
                     else:
-                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE)
+                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE, roi_id)
 
                 else:
                     imCrop = Image.fromarray(cv2image[start_y : start_y+end_y, start_x : start_x+end_x])
@@ -361,13 +362,13 @@ def main():
                         print("query", recipe_results) 
 
                         if recipe_results:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (0,255,0), data, roi_name, TRUE, roi_id)
                             passCount+=1
                         else:
-                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0),decoded_data, roi_name, FALSE)
+                            imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0),decoded_data, roi_name, FALSE, roi_id)
          
                     if not decode(imCrop):                    
-                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE)
+                        imgTemp = imgText(imgTemp, [start_x, start_y], [end_x, end_y], (255,0,0), " ", roi_name, FALSE, roi_id)
 
 
         labelConfig(imgTemp)
@@ -416,9 +417,9 @@ def main():
             mysqldb.commit() 
 
             # capture_roi update 
-            update = "UPDATE capture_roi set capture_id=%s WHERE capture_id=0"
+            update = "UPDATE capture_roi set capture_id=%s WHERE capture_id=0 and station_name=%s"
             captureId = mycursor.lastrowid
-            mycursor.execute(update,(captureId,))
+            mycursor.execute(update,(captureId,hostname))
             mysqldb.commit() 
             # print(saveSelection)
 
